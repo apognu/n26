@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"syscall"
 	"time"
-
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 func (cl *N26Client) GetPastTransactions(meta *Metadata, from, to string, limit int) (PastTransactionList, error) {
@@ -146,9 +143,7 @@ func (cl *N26Client) CreateMoneyBeam(meta *Metadata, name, recipient string, amo
 
 	confirmMoneyBeam(details, balance)
 
-	fmt.Print("Enter your PIN: ")
-	pin, err := terminal.ReadPassword(syscall.Stdin)
-	line()
+	pin, err := readSecret("Enter your PIN:")
 	if err != nil {
 		return "", fmt.Errorf("could not read PIN")
 	}

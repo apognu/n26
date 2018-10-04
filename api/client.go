@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -10,10 +9,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"syscall"
 	"time"
-
-	"golang.org/x/crypto/ssh/terminal"
 
 	"golang.org/x/oauth2"
 )
@@ -47,15 +43,8 @@ func NewClient() (*N26Client, error) {
 			token = &oauth2.Token{RefreshToken: creds.RefreshToken}
 		}
 	} else {
-		fmt.Print("N26 email address: ")
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-
-		username := scanner.Text()
-
-		fmt.Print("N26 Password: ")
-		password, err := terminal.ReadPassword(syscall.Stdin)
-		line()
+		username := readLine("N26 email address:")
+		password, err := readSecret("N26 password:")
 		if err != nil {
 			return nil, fmt.Errorf("could not read password")
 		}

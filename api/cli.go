@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -77,12 +76,8 @@ func confirmSpaceTransfer(from, to *Space, amount float64) {
 	table.Render()
 
 	line()
-	fmt.Print("Are you sure you want to perform the transfer? (y/N) ")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-
-	if scanner.Text() != "y" {
+	if readLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
 		Fatal(fmt.Errorf("the transfer was not performed"))
 	}
 }
@@ -106,12 +101,8 @@ func confirmMoneyBeam(trx MoneyBeamDetails, balance *Balance) {
 	table.Render()
 
 	line()
-	fmt.Print("Are you sure you want to perform the transfer? (y/N) ")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-
-	if scanner.Text() != "y" {
+	if readLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
 		Fatal(fmt.Errorf("the transfer was not performed"))
 	}
 }
