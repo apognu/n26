@@ -1,21 +1,34 @@
-package api
+package cli
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"syscall"
 
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/oauth2"
+)
+
+var (
+	titleColor = color.New(color.Bold, color.FgBlue)
+	attrColor  = color.New(color.Faint)
+
+	okColor   = color.New(color.FgGreen)
+	warnColor = color.New(color.FgYellow)
+	errColor  = color.New(color.FgRed)
 )
 
 func Fatal(err error) {
 	if e1, ok := err.(*url.Error); ok {
 		if e2, ok := e1.Err.(*oauth2.RetrieveError); ok {
 			if e2.Response.StatusCode == 401 {
-				DeleteCredentials()
+				// DeleteCredentials()
 			}
 
 			msg := make(map[string]string)
@@ -27,6 +40,28 @@ func Fatal(err error) {
 	}
 
 	logrus.Fatal(err)
+}
+
+func ReadLine(prompt string) string {
+	fmt.Print(fmt.Sprintf("%s ", prompt))
+
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+
+	return scanner.Text()
+}
+
+func ReadSecret(prompt string) (string, error) {
+	fmt.Print(prompt)
+	secret, err := terminal.ReadPassword(syscall.Stdin)
+
+	line()
+
+	if err != nil {
+		return "", fmt.Errorf("could not read PIN")
+	}
+
+	return string(secret), nil
 }
 
 func line() {
@@ -53,22 +88,22 @@ func attr(key, value string) {
 	fmt.Printf("%s %s\n", attrColor.Sprintf("%s:", key), value)
 }
 
-func curr(amount float64, currency string) string {
+func Curr(amount float64, currency string) string {
 	return fmt.Sprintf("%.2f %s", amount, currency)
 }
 
-func confirmSpaceTransfer(from, to *Space, amount float64) {
+func ConfirmSpaceTransfer(from, to *Space, amount float64) {
 	title("Please confirm you want to perform the following transfer")
 	line()
 
 	data := make([][]string, 3)
 
-	data[0] = []string{errColor.Sprintf(from.Name), "→", curr(amount, from.Balance.Currency), "→", okColor.Sprintf(to.Name)}
+	data[0] = []string{errColor.Sprintf(from.Name), "→", Curr(amount, from.Balance.Currency), "→", okColor.Sprintf(to.Name)}
 	data[1] = []string{attrColor.Sprintf(from.ID), "", "", "", attrColor.Sprintf(to.ID)}
 	data[2] = []string{
-		curr(from.Balance.AvailableBalance, from.Balance.Currency),
+		Curr(from.Balance.AvailableBalance, from.Balance.Currency),
 		"", "", "",
-		curr(to.Balance.AvailableBalance, to.Balance.Currency),
+		Curr(to.Balance.AvailableBalance, to.Balance.Currency),
 	}
 
 	table := table()
@@ -77,12 +112,12 @@ func confirmSpaceTransfer(from, to *Space, amount float64) {
 
 	line()
 
-	if readLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
+	if ReadLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
 		Fatal(fmt.Errorf("the transfer was not performed"))
 	}
 }
 
-func confirmMoneyBeam(trx MoneyBeamDetails, balance *Balance) {
+func ConfirmMoneyBeam(trx MoneyBeamDetails, balance *Balance) {
 	title("Please confirm you want to perform the following transfer")
 	fmt.Println("You will be asked for your PIN and will have to confirm the transfer from your paired device.")
 	line()
@@ -93,8 +128,8 @@ func confirmMoneyBeam(trx MoneyBeamDetails, balance *Balance) {
 	}
 
 	data := make([][]string, 3)
-	data[0] = []string{errColor.Sprintf("Main Account"), "→", curr(trx.Amount, balance.Currency), "→", okColor.Sprintf(trx.PartnerName)}
-	data[1] = []string{curr(balance.AvailableBalance, balance.Currency), "", trx.Comment, "", attrColor.Sprintf(partnerID)}
+	data[0] = []string{errColor.Sprintf("Main Account"), "→", Curr(trx.Amount, balance.Currency), "→", okColor.Sprintf(trx.PartnerName)}
+	data[1] = []string{Curr(balance.AvailableBalance, balance.Currency), "", trx.Comment, "", attrColor.Sprintf(partnerID)}
 
 	table := table()
 	table.AppendBulk(data)
@@ -102,7 +137,7 @@ func confirmMoneyBeam(trx MoneyBeamDetails, balance *Balance) {
 
 	line()
 
-	if readLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
+	if ReadLine("Are you sure you want to perform the transfer? (y/N) ") != "y" {
 		Fatal(fmt.Errorf("the transfer was not performed"))
 	}
 }

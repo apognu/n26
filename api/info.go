@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/apognu/n26/cli"
 )
 
-func (cl *N26Client) GetPersonalInformation(meta *Metadata) (*PersonalInformation, error) {
+func (cl *N26Client) GetPersonalInformation(meta *cli.Metadata) (*cli.PersonalInformation, error) {
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    "/api/me",
-		Decoder: NewJSON(new(PersonalInformation)),
+		Decoder: NewJSON(new(cli.PersonalInformation)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -18,18 +20,18 @@ func (cl *N26Client) GetPersonalInformation(meta *Metadata) (*PersonalInformatio
 		return nil, err
 	}
 
-	if info, ok := output.(*PersonalInformation); ok {
+	if info, ok := output.(*cli.PersonalInformation); ok {
 		return info, nil
 	}
 
 	return nil, fmt.Errorf("could not unmarshal upstream data")
 }
 
-func (cl *N26Client) GetAccount(meta *Metadata) (*Account, error) {
+func (cl *N26Client) GetAccount(meta *cli.Metadata) (*cli.Account, error) {
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    "/api/accounts",
-		Decoder: NewJSON(new(Account)),
+		Decoder: NewJSON(new(cli.Account)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -37,18 +39,18 @@ func (cl *N26Client) GetAccount(meta *Metadata) (*Account, error) {
 		return nil, err
 	}
 
-	if balance, ok := output.(*Account); ok {
+	if balance, ok := output.(*cli.Account); ok {
 		return balance, nil
 	}
 
 	return nil, fmt.Errorf("could not unmarshal upstream data")
 }
 
-func (cl *N26Client) GetBalance(meta *Metadata) (*Balance, error) {
+func (cl *N26Client) GetBalance(meta *cli.Metadata) (*cli.Balance, error) {
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    "/api/accounts",
-		Decoder: NewJSON(new(Balance)),
+		Decoder: NewJSON(new(cli.Balance)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -56,18 +58,18 @@ func (cl *N26Client) GetBalance(meta *Metadata) (*Balance, error) {
 		return nil, err
 	}
 
-	if balance, ok := output.(*Balance); ok {
+	if balance, ok := output.(*cli.Balance); ok {
 		return balance, nil
 	}
 
 	return nil, fmt.Errorf("could not unmarshal upstream data")
 }
 
-func (cl *N26Client) GetSpaces(meta *Metadata) (*Spaces, error) {
+func (cl *N26Client) GetSpaces(meta *cli.Metadata) (*cli.Spaces, error) {
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    "/api/spaces",
-		Decoder: NewJSON(new(Spaces)),
+		Decoder: NewJSON(new(cli.Spaces)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -75,7 +77,7 @@ func (cl *N26Client) GetSpaces(meta *Metadata) (*Spaces, error) {
 		return nil, err
 	}
 
-	if spaces, ok := output.(*Spaces); ok {
+	if spaces, ok := output.(*cli.Spaces); ok {
 		return spaces, nil
 	}
 
@@ -86,7 +88,7 @@ func (cl *N26Client) GetCategories() (map[string]string, error) {
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    fmt.Sprintf("/api/smrt/categories"),
-		Decoder: NewJSON(new([]Category)),
+		Decoder: NewJSON(new([]cli.Category)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -94,7 +96,7 @@ func (cl *N26Client) GetCategories() (map[string]string, error) {
 		return nil, err
 	}
 
-	if cats, ok := output.(*[]Category); ok {
+	if cats, ok := output.(*[]cli.Category); ok {
 		categories := make(map[string]string)
 		for _, cat := range *cats {
 			categories[cat.ID] = cat.Name
@@ -106,7 +108,7 @@ func (cl *N26Client) GetCategories() (map[string]string, error) {
 	return nil, fmt.Errorf("could not unmarshal upstream data")
 }
 
-func (cl *N26Client) GetStatistics(meta *Metadata, from, to string) (*Statistics, error) {
+func (cl *N26Client) GetStatistics(meta *cli.Metadata, from, to string) (*cli.Statistics, error) {
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
 	end := start.AddDate(0, 1, 0).Add(-time.Nanosecond)
@@ -123,7 +125,7 @@ func (cl *N26Client) GetStatistics(meta *Metadata, from, to string) (*Statistics
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    fmt.Sprintf("/api/smrt/statistics/categories/%d/%d", start.Unix()*1000, end.Unix()*1000),
-		Decoder: NewJSON(new(Statistics)),
+		Decoder: NewJSON(new(cli.Statistics)),
 	}
 
 	output, err := cl.Request(req, false)
@@ -131,7 +133,7 @@ func (cl *N26Client) GetStatistics(meta *Metadata, from, to string) (*Statistics
 		return nil, err
 	}
 
-	if stats, ok := output.(*Statistics); ok {
+	if stats, ok := output.(*cli.Statistics); ok {
 		if meta.GetCategories() == nil {
 			return nil, fmt.Errorf("could not get categories")
 		}

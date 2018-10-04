@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/apognu/n26/api"
+	"github.com/apognu/n26/cli"
 )
 
 func main() {
@@ -49,15 +50,15 @@ func main() {
 
 	cl, err := api.NewClient()
 	if err != nil {
-		api.Fatal(fmt.Errorf("could not authenticate to N26"))
+		cli.Fatal(fmt.Errorf("could not authenticate to N26"))
 	}
 
 	categories, _ := cl.GetCategories()
-	meta := &api.Metadata{
+	meta := &cli.Metadata{
 		Categories: categories,
 	}
 
-	var cmd api.Printable
+	var cmd cli.Printable
 
 	switch args {
 	case kpInfo.FullCommand():
@@ -83,7 +84,7 @@ func main() {
 	}
 
 	if err != nil {
-		api.Fatal(err)
+		cli.Fatal(err)
 		return
 	}
 

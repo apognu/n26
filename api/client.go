@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/apognu/n26/cli"
 	"golang.org/x/oauth2"
 )
 
@@ -22,6 +23,20 @@ type N26Request struct {
 	Params  map[string]string
 	Body    interface{}
 	Decoder *JSON
+}
+
+type N26Error struct {
+	Title   string `json:"title"`
+	Message string `json:"message"`
+}
+
+type CredentialsExpiry time.Time
+
+type Credentials struct {
+	TokenType    string    `json:"token_type"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	Expiry       time.Time `json:"expiry"`
 }
 
 const (
@@ -43,8 +58,8 @@ func NewClient() (*N26Client, error) {
 			token = &oauth2.Token{RefreshToken: creds.RefreshToken}
 		}
 	} else {
-		username := readLine("N26 email address:")
-		password, err := readSecret("N26 password:")
+		username := cli.ReadLine("N26 email address:")
+		password, err := cli.ReadSecret("N26 password:")
 		if err != nil {
 			return nil, fmt.Errorf("could not read password")
 		}
@@ -116,13 +131,13 @@ func (cl *N26Client) Request(r *N26Request, retry bool) (interface{}, error) {
 	}
 
 	if resp.StatusCode > 399 {
-		r.Decoder = NewJSON(new(Error))
+		r.Decoder = NewJSON(new(N26Error))
 
 		output, err := r.Decoder.Decode(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("an unknown error has occured")
 		}
-		return nil, fmt.Errorf(output.(*Error).Message)
+		return nil, fmt.Errorf(output.(*N26Error).Message)
 	}
 
 	if r.Decoder == nil {
@@ -147,7 +162,7 @@ func ConfigPath() string {
 	case "darwin":
 		return fmt.Sprintf("%s/.n26.auth", os.Getenv("HOME"))
 	default:
-		Fatal(fmt.Errorf("platform '%s' unsupported", runtime.GOOS))
+		cli.Fatal(fmt.Errorf("platform '%s' unsupported", runtime.GOOS))
 	}
 	return ""
 }
@@ -162,12 +177,12 @@ func SaveCredentials(token *oauth2.Token, exp time.Time) {
 
 	data, err := json.Marshal(creds)
 	if err != nil {
-		Fatal(fmt.Errorf("could not marshal credentials"))
+		cli.Fatal(fmt.Errorf("could not marshal credentials"))
 	}
 
 	err = ioutil.WriteFile(ConfigPath(), data, 0600)
 	if err != nil {
-		Fatal(fmt.Errorf("could not write credentials file to '%s'", ConfigPath()))
+		cli.Fatal(fmt.Errorf("could not write credentials file to '%s'", ConfigPath()))
 	}
 }
 
@@ -189,7 +204,7 @@ func LoadCredentials() (*Credentials, error) {
 func DeleteCredentials() {
 	err := os.Remove(ConfigPath())
 	if err != nil {
-		Fatal(fmt.Errorf("could not delete credentials file at '%s'", ConfigPath()))
+		cli.Fatal(fmt.Errorf("could not delete credentials file at '%s'", ConfigPath()))
 	}
 }
 
