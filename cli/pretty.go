@@ -24,11 +24,6 @@ func (info PersonalInformation) Print(meta *Metadata) {
 	attr("Phone number", info.Phone)
 	attr("Birth date", bd.Format("02 Jan 2006"))
 	attr("Nationality", info.Nationality)
-	if info.SignupCompleted {
-		attr("Signup status", okColor.Sprintf("COMPLETE"))
-	} else {
-		attr("Signup status", errColor.Sprintf("INCOMPLETE"))
-	}
 }
 
 func (account Account) Print(meta *Metadata) {
@@ -109,14 +104,6 @@ func (transactions PastTransactionList) Print(meta *Metadata) {
 			amount = errColor.Sprintf("→ %.2f %s", math.Abs(trx.Amount), trx.Currency)
 		}
 
-		location := ""
-		if trx.MerchantCity != "" {
-			location = trx.MerchantCity
-		}
-		if trx.MerchantCountry != "" {
-			location = fmt.Sprintf("%s (%s)", location, trx.MerchantCountry)
-		}
-
 		if trx.Scheme == "SPACES" {
 			party = "N26 Spaces"
 		}
@@ -126,7 +113,7 @@ func (transactions PastTransactionList) Print(meta *Metadata) {
 			party,
 			amount,
 			meta.GetCategory(trx.Category),
-			location,
+			trx.MerchantCity,
 			attrColor.Sprintf(trx.Comment),
 		}
 	}

@@ -14,6 +14,8 @@ func main() {
 	kp.HelpFlag.Short('h')
 	kp.UsageTemplate(kingpin.DefaultUsageTemplate)
 
+	kpFormat := kp.Flag("format", "how to display data").Short('o').Default("pretty").Enum("pretty", "json")
+
 	kpInfo := kp.Command("info", "Display the account holder personal information")
 	kpAccount := kp.Command("account", "Display the account information")
 	kpBalance := kp.Command("balance", "Display the account current balance")
@@ -89,6 +91,11 @@ func main() {
 	}
 
 	if cmd != nil {
-		cmd.Print(meta)
+		switch *kpFormat {
+		case "pretty":
+			cmd.Print(meta)
+		case "json":
+			cmd.JSON(meta)
+		}
 	}
 }

@@ -10,11 +10,18 @@ import (
 )
 
 func (cl *N26Client) GetPastTransactions(meta *cli.Metadata, from, to string, limit int) (cli.PastTransactionList, error) {
+	now := time.Now()
+	defaultFrom := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
+	defaultTo := defaultFrom.AddDate(0, 1, 0).Add(-time.Nanosecond)
+
 	req := &N26Request{
 		Method:  http.MethodGet,
 		Path:    "/api/smrt/transactions",
 		Decoder: NewJSON(new(cli.PastTransactionList)),
-		Params:  map[string]string{},
+		Params: map[string]string{
+			"from": fmt.Sprintf("%d", defaultFrom.Unix()*1000),
+			"to":   fmt.Sprintf("%d", defaultTo.Unix()*1000),
+		},
 	}
 
 	req.Params["limit"] = fmt.Sprintf("%d", limit)

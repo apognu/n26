@@ -28,6 +28,7 @@ func (meta *Metadata) GetCategory(id string) string {
 
 type Printable interface {
 	Print(meta *Metadata)
+	JSON(meta *Metadata)
 }
 
 type SimpleMessage string
@@ -118,19 +119,18 @@ type SpaceTransaction struct {
 type PastTransactionList []PastTransaction
 
 type PastTransaction struct {
-	ID              string  `json:"id"`
-	Type            string  `json:"type"`
-	Date            int64   `json:"visibleTS"`
-	Amount          float64 `json:"amount"`
-	Currency        string  `json:"currencyCode"`
-	Partner         string  `json:"partnerName"`
-	Pending         bool    `json:"pending"`
-	MerchantName    string  `json:"merchantName"`
-	MerchantCity    string  `json:"merchantCity"`
-	MerchantCountry string  `json:"merchantCountry"`
-	Comment         string  `json:"referenceText"`
-	Category        string  `json:"category"`
-	Scheme          string  `json:"paymentScheme"`
+	ID           string  `json:"id"`
+	Type         string  `json:"type"`
+	Date         int64   `json:"visibleTS"`
+	Amount       float64 `json:"amount"`
+	Currency     string  `json:"currencyCode"`
+	Partner      string  `json:"partnerName,omitempty"`
+	Pending      bool    `json:"pending"`
+	MerchantName string  `json:"merchantName"`
+	MerchantCity string  `json:"merchantCity"`
+	Comment      string  `json:"referenceText"`
+	Category     string  `json:"category"`
+	Scheme       string  `json:"paymentScheme"`
 }
 
 type MoneyBeam struct {
