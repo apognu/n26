@@ -78,6 +78,17 @@ func (cards CardList) JSON(meta *Metadata) {
 }
 
 func (limits LimitList) JSON(meta *Metadata) {
+	data := make(js)
+
+	for _, limit := range limits {
+		if l, ok := LimitStatuses[limit.Limit]; ok {
+			data[l] = limit.Amount
+		} else {
+			data[limit.Limit] = limit.Amount
+		}
+	}
+
+	JSON(data)
 }
 
 func (transactions PastTransactionList) JSON(meta *Metadata) {
